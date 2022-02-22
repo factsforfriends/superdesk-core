@@ -70,9 +70,9 @@ class F3JSONFeedParser(FeedParser):
         item["priority"] = int(article.get("priority", "5"))
 
         item["extra"] = {
-            "factsnack-claim" = article.get("claim", "")
-            "factsnack-fact" = article.get("fact", "")
-            "factsnack-source" = article.get("uri")
+            "factsnack-claim": article.get("claim", "")
+            "factsnack-fact": article.get("fact", "")
+            "factsnack-source": article.get("uri")
         }
 
         return item
