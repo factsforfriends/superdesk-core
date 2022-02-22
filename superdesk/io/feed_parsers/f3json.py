@@ -60,7 +60,7 @@ class F3JSONFeedParser(FeedParser):
         guid = article.get("guid")
         if not guid and article.get("uri"):
             guid = generate_tag_from_url(article["uri"], "urn")
-        item = {"guid": guid, "type": article.get("type", default="text"), "uri": article.get("uri"), "profile": "Fact Snack"}
+        item = {"guid": guid, "type": article.get("type", "text"), "uri": article.get("uri"), "profile": "Fact Snack"}
 
         for copy_property in self.direct_copy_properties:
             if article.get(copy_property) is not None:
