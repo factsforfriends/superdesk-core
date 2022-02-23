@@ -41,7 +41,7 @@ class FactSnackFeedParser(FeedParser):
 
     def can_parse(self, item):
         try:
-            return isinstance(item, dict) and set(required_properties).issubset(items.keys())
+            return isinstance(item, dict) and set(self.required_properties).issubset(items.keys())
         except AttributeError:
             return False
 
@@ -57,9 +57,9 @@ class FactSnackFeedParser(FeedParser):
         new_item["priority"] = int(item.get("priority", "5"))
 
         new_item["extra"] = {
-            "factsnack-claim": item.get("claim", ""),
-            "factsnack-fact": item.get("fact", ""),
-            "factsnack-source": item.get("uri")
+            "factsnack-claim": item.get("claim"),
+            "factsnack-fact": item.get("fact"),
+            "factsnack-source": item.get("url")
         }
         return item
 
