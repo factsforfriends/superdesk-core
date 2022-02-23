@@ -8,8 +8,7 @@
 # AUTHORS and LICENSE files distributed with this source code, or
 # at https://www.sourcefabric.org/superdesk/license
 
-import re
-
+import json
 from datetime import datetime
 
 from superdesk.errors import IngestApiError, ParserError
