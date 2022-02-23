@@ -290,7 +290,7 @@ from superdesk.io.feeding_services.twitter import TwitterFeedingService  # NOQA
 from superdesk.io.feeding_services.ap import APFeedingService  # NOQA
 from superdesk.io.feeding_services.bbc_ldrs import BBCLDRSFeedingService  # NOQA
 from superdesk.io.feeding_services.ap_media import APMediaFeedingService  # NOQA
-
+from superdesk.io.feeding_services.json_file import JSONFileFeedingService
 
 def init_app(app) -> None:
     # app needs to be accessible for those feeding services
