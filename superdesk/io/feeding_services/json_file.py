@@ -49,7 +49,7 @@ class JSONFileFeedingService(HTTPFeedingServiceBase):
         url = self.config.get("url")
         response = self.get_url(url)
         
-        json_items = json.loads(response)
+        json_items = json.loads(response.text)
         if not isinstance(json_items, list):
             json_items = [json_items]
 
