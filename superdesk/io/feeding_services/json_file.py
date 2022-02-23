@@ -42,12 +42,12 @@ class JSONFileFeedingService(HTTPFeedingServiceBase):
         super().__init__()
 
     def _test(self, provider):
-        config = self.config
-        url = config["url"]
+        url = self.config.get("url")
 
         self.get_url(url)
 
     def _update(self, provider, update):
+        url = self.config.get("url")
         response = self.get_url(url)
         
         json_items = json.loads(response)
