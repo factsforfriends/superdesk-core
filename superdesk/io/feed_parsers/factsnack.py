@@ -41,7 +41,7 @@ class FactSnackFeedParser(FeedParser):
 
     def can_parse(self, item):
         try:
-            return isinstance(item, dict) and set(self.required_properties).issubset(items.keys())
+            return isinstance(item, dict) and set(self.required_properties).issubset(item.keys())
         except AttributeError:
             return False
 
