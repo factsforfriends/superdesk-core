@@ -68,7 +68,7 @@ class FactSnackFeedParser(FeedParser):
         }
 
         if item.get("date"):
-            new_item["versioncreated"] = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M")
+            new_item["versioncreated"] = datetime.datetime.strptime(item.get("date"), "%Y-%m-%dT%H:%M")
         else:
             new_item["versioncreated"] = datetime.datetime.now()
 
