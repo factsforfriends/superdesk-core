@@ -36,6 +36,8 @@ class FactSnackFeedParser(FeedParser):
         "url"
     )
 
+    items = []
+
     def __init__(self):
         super().__init__()
 
@@ -70,6 +72,6 @@ class FactSnackFeedParser(FeedParser):
             new_item["versioncreated"] = datetime.datetime.now()
 
         logger.error('Parsed item looks like: {}'.format(new_item))
-        return new_item
+        return [new_item]
 
 register_feed_parser(FactSnackFeedParser.NAME, FactSnackFeedParser())
