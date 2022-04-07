@@ -128,7 +128,7 @@ def filter_expired_items(provider, items):
                 del provider["content_expiry"]
                 content_expiry = None
         
-        logger.error('Filtering expired items: ' + items)
+        logger.error('Filtering expired items: {}'.format(items))
 
         delta = timedelta(minutes=content_expiry or app.config["INGEST_EXPIRY_MINUTES"])
         filtered_items = [
