@@ -19,7 +19,6 @@ from superdesk.metadata.utils import generate_tag_from_url
 
 logger = logging.getLogger(__name__)
 
-
 class FactSnackFeedParser(FeedParser):
     """
     A custom parser for dicts used by Facts for Friends
@@ -33,7 +32,8 @@ class FactSnackFeedParser(FeedParser):
         "language",
         "headline",
         "claim",
-        "fact"
+        "fact",
+        "url"
     )
 
     def __init__(self):
@@ -61,6 +61,11 @@ class FactSnackFeedParser(FeedParser):
             "factsnack-fact": item.get("fact"),
             "factsnack-source": item.get("url")
         }
-        return item
+
+        if item.get("date"):
+            new_item["versioncreated"] = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S")
+        else:
+            new_item["versioncreated"] = datetime.datetime.now()
+        return new_item
 
 register_feed_parser(FactSnackFeedParser.NAME, FactSnackFeedParser())
