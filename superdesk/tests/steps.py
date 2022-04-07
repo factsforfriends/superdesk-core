@@ -12,6 +12,8 @@
 import os
 import time
 import shutil
+import operator
+
 from unittest import mock
 from copy import deepcopy
 from base64 import b64encode
@@ -54,6 +56,7 @@ from superdesk.tests import get_prefixed_url, set_placeholder
 from apps.dictionaries.resource import DICTIONARY_FILE
 from superdesk.filemeta import get_filemeta
 from apps.preferences import enhance_document_with_default_prefs
+from apps.prepopulate.app_initialize import AppInitializeWithDataCommand
 
 # for auth server
 from authlib.jose import jwt
@@ -749,14 +752,17 @@ def get_response_etag(response):
     return json.loads(response.get_data())["_etag"]
 
 
-@when("we save etag")
+@then("we save etag")
 def step_when_we_save_etag(context):
     context.etag = get_response_etag(context.response)
 
 
-@then("we get same etag")
+@then("we get matching etag")
 def step_then_we_get_same_etag(context):
-    assert context.etag == get_response_etag(context.response), "etags not matching"
+    assert context.etag == get_response_etag(context.response), "etags not matching %s != %s" % (
+        context.etag,
+        get_response_etag(context.response),
+    )
 
 
 @then("we get different etag")
@@ -1104,13 +1110,23 @@ def step_impl_then_get_list(context, total_count):
 
 
 @then("we get list ordered by {field} with {total_count} items")
-def step_impl_ordered_list(context, field, total_count):
+def step_impl_ordered_by_field_list(context, field, total_count):
     step_impl_then_get_list(context, total_count)
     data = get_json_data(context.response)
-    fields = []
-    for i in data["_items"]:
-        fields.append(i[field])
-    assert sorted(fields) == fields
+    items = data["_items"]
+    assert sorted(items, key=operator.itemgetter(field)) == items
+
+
+@then("we get ordered list with {total_count} items")
+def step_impl_get_ordered_list(context, total_count):
+    step_impl_then_get_list(context, total_count)
+    data = get_json_data(context.response)
+    server_items = data["_items"]
+    context_items = json.loads(apply_placeholders(context, context.text))["_items"]
+    idgetter = operator.itemgetter("_id")
+    server_sorted = list(map(idgetter, server_items))
+    context_sorted = list(map(idgetter, context_items))
+    assert server_sorted == context_sorted, "server items are not sorted: %s" % server_sorted
 
 
 @then('we get "{value}" in formatted output')
@@ -2690,3 +2706,9 @@ def step_impl_then_we_dont_get_access_token(context):
     resp = json.loads(context.response.data)
     assert context.response.status_code == 401
     assert resp == {"error": "invalid_client"}
+
+
+@when('we init data "{entity}"')
+def setp_impl_when_we_init_data(context, entity):
+    with context.app.app_context():
+        AppInitializeWithDataCommand().run(entity)

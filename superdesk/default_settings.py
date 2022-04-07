@@ -18,11 +18,14 @@ import os
 import pytz
 import tzlocal
 from urllib.parse import urlparse
+import logging
 
 from datetime import timedelta, datetime
 from celery.schedules import crontab
 from kombu import Queue, Exchange
 from distutils.util import strtobool as _strtobool
+
+logger = logging.getLogger()
 
 
 def strtobool(value):
@@ -136,6 +139,27 @@ X_DOMAINS = "*"
 X_MAX_AGE = 24 * 3600
 X_HEADERS = ["Content-Type", "Authorization", "If-Match"]
 
+#: Required for cross-origin cookies for session storage (using ``flask.session``)
+#:
+#: .. versionadded:: 2.4.0
+X_ALLOW_CREDENTIALS = True
+
+#: Don't allow access to the session cookie from the front-end
+#:
+#: .. versionadded:: 2.4.0
+SESSION_COOKIE_HTTPONLY = True
+
+#: Only allow cookies through https if the client is using it
+#:
+#: .. versionadded:: 2.4.0
+SESSION_COOKIE_SECURE = CLIENT_URL.startswith("https")
+
+#: Prevent sending cookies with all external requests
+#: But still allow cross-origin/same-site requests
+#:
+#: .. versionadded:: 2.4.0
+SESSION_COOKIE_SAMESITE = "Lax"
+
 #: mongo db name, only used when mongo_uri is not set
 MONGO_DBNAME = env("MONGO_DBNAME", "superdesk")
 
@@ -144,6 +168,8 @@ MONGO_URI = env("MONGO_URI", "mongodb://localhost/%s" % MONGO_DBNAME)
 
 #: allow all mongo queries
 MONGO_QUERY_BLACKLIST = []
+
+MONGO_LOCALE = "en_US"
 
 #: legal archive switch
 LEGAL_ARCHIVE = env("LEGAL_ARCHIVE", None)
@@ -160,7 +186,7 @@ ARCHIVED_DBNAME = env("ARCHIVED_DBNAME", "archived")
 #: archived mongodb uri
 ARCHIVED_URI = env("ARCHIVED_URI", "mongodb://localhost/%s" % ARCHIVED_DBNAME)
 
-CONTENTAPI_MONGO_DBNAME = "contentapi"
+CONTENTAPI_MONGO_DBNAME = env("CONTENTAPI_MONGO_DBNAME", "contentapi")
 CONTENTAPI_MONGO_URI = env("CONTENTAPI_MONGO_URI", "mongodb://localhost/%s" % CONTENTAPI_MONGO_DBNAME)
 
 #: elastic url
@@ -191,7 +217,7 @@ ELASTICSEARCH_SETTINGS = {
                 },
                 "html_field_analyzer": {
                     "type": "custom",
-                    "filter": ["lowercase"],
+                    "filter": ["lowercase", "asciifolding"],
                     "tokenizer": "standard",
                     "char_filter": ["html_strip_filter"],
                 },
@@ -359,6 +385,7 @@ CORE_APPS = [
     "apps.links",
     "superdesk.locales",
     "apps.usage_metrics",
+    "superdesk.system.health",
 ]
 
 #: Specify what modules should be enabled
@@ -516,6 +543,10 @@ RENDITIONS = {
     "avatar": {
         "thumbnail": {"width": 60, "height": 60},
         "viewImage": {"width": 200, "height": 200},
+    },
+    "sams": {
+        "thumbnail": {"width": 220, "height": 140},
+        "viewImage": {"width": 640, "height": 640},
     },
 }
 
@@ -687,7 +718,15 @@ EMAIL_TIMEOUT = 10
 #: This setting is used to overide the desk/stage expiry for items when spiked
 SPIKE_EXPIRY_MINUTES = None
 
+#: A secret key that will be used to securely sign cookies and other things
+#:
+#: .. versionadded:: 1.5
+#: .. versionchanged:: 2.4.0
+#:    Now required as ``flask.session`` will be used for some authentication
 SECRET_KEY = env("SECRET_KEY", "")
+if not SECRET_KEY:
+    SECRET_KEY = b"\x16\xda\xcb\x07\xf3oV\xa7\xdf\xec\xb8\xe8u+P\xe0Q\xc5?\x9a_\x8b\x16j\xcf\xe3I\x83y\xa0\xb3\xc4"
+    logger.warning("SECRET_KEY is not set, hardcoded value is used instead. This should not be used on production!")
 
 #: secure login
 XMPP_AUTH_URL = env("XMPP_AUTH_URL", "")
@@ -792,7 +831,16 @@ VALIDATOR_MEDIA_METADATA = {
     "headline": {
         "required": True,
     },
+    "slugline": {
+        "required": True,
+    },
     "alt_text": {
+        "required": True,
+    },
+    "anpa_category": {
+        "required": True,
+    },
+    "subject": {
         "required": True,
     },
     "archive_description": {
@@ -901,6 +949,10 @@ ARCHIVE_AUTOCOMPLETE_DAYS = 0
 #:
 ARCHIVE_AUTOCOMPLETE_HOURS = 0
 
+#:
+#: .. versionadded:: 2.3.6
+#:
+ARCHIVE_AUTOCOMPLETE_LIMIT = 500
 
 #: Tansa client config
 #:
@@ -972,3 +1024,10 @@ OIDC_BROWSER_REDIRECT_URL = env("OIDC_BROWSER_REDIRECT_URL", CLIENT_URL)
 #:
 APPS_DATA_UPDATES_PATHS = []
 PUBLISH_ASSOCIATIONS_RESEND = "new"
+
+#: Elastic APM
+#:
+#: .. versionadded:: 2.5
+#:
+APM_SERVER_URL = env("APM_SERVER_URL")
+APM_SECRET_TOKEN = env("APM_SECRET_TOKEN")

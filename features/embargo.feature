@@ -22,6 +22,7 @@ Feature: Embargo Date and Time on an Article (User Story: https://dev.sourcefabr
     [{"_id": "123",
       "name":"Wire Subscriber",
       "media_type":"media",
+      "is_active": true,
       "subscriber_type": "wire",
       "sequence_num_settings":{"min" : 1, "max" : 10}, "email": "test@test.com",
       "products": ["1"],
@@ -29,6 +30,7 @@ Feature: Embargo Date and Time on an Article (User Story: https://dev.sourcefabr
      {"_id": "321",
       "name":"Digital Subscriber",
       "media_type":"media",
+      "is_active": true,
       "subscriber_type": "digital",
       "sequence_num_settings":{"min" : 1, "max" : 10}, "email": "test@test.com",
       "products": ["1"],
@@ -36,6 +38,7 @@ Feature: Embargo Date and Time on an Article (User Story: https://dev.sourcefabr
      {"_id": "456",
       "name":"2nd Wire Subscriber",
       "media_type":"non-media",
+      "is_active": true,
       "subscriber_type": "wire",
       "sequence_num_settings":{"min" : 1, "max" : 10}, "email": "test@test.com",
       "products": ["1"],
@@ -533,13 +536,17 @@ Feature: Embargo Date and Time on an Article (User Story: https://dev.sourcefabr
   Scenario: Cannot rewrite an article which has Embargo
     When we patch "/archive/123"
     """
-    {"embargo": "#DATE+1#"}
+    {"embargo": "2030-02-13T22:46:19.000Z"}
     """
     And we publish "#archive._id#" with "publish" type and "published" state
     Then we get OK response
     And we get existing resource
     """
-    {"_current_version": 3, "state": "published", "task":{"desk": "#desks._id#", "stage": "#desks.incoming_stage#"}}
+    {
+      "_current_version": 3, "state": "published", "task":{"desk": "#desks._id#", "stage": "#desks.incoming_stage#"},
+      "embargo": "2030-02-13T22:46:19+0000",
+      "schedule_settings":  {"utc_embargo": "2030-02-13T22:46:19+0000"}
+    }
     """
     When we get "/published"
     Then we get existing resource

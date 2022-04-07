@@ -1408,29 +1408,6 @@ Feature: Content Profile
         """
 
     @auth
-    Scenario: Content profile defaults override user profile defaults
-        Given "content_types"
-        """
-        [{"_id": "foo", "label": "Foo", "schema": {
-            "byline": {"default": "By Foo"},
-            "headline": null,
-            "place": {"default": [{"name": "Prague"}]}
-        }}]
-        """
-        When we patch "/users/#CONTEXT_USER_ID#"
-        """
-        {"byline": "By Admin"}
-        """
-        When we post to "/archive"
-        """
-        {"type": "text", "profile": "foo"}
-        """
-        Then we get new resource
-        """
-        {"byline": "By Foo", "place": [{"name": "Prague"}]}
-        """
-
-    @auth
     Scenario: Validate using content profile when publishing
         Given "vocabularies"
         """
@@ -1892,13 +1869,13 @@ Feature: Content Profile
             "template_name": "foo",
             "data": {
                 "slugline": "Testing the slugline",
-                "profile": "foo",
-                "language": "fr"
+                "profile": "foo"
             }
           }]
         }
         """
         And there is no "headline" in data
+        And there is no "language" in data
 
     @auth
     Scenario: Removing the keywords field from content profile should not show the keywords field again 
