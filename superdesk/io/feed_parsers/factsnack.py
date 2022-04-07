@@ -46,6 +46,8 @@ class FactSnackFeedParser(FeedParser):
             return False
 
     def parse(self, item, provider=None):
+        logger.debug('Parsing fact snack item: ' + item)
+
         guid = item.get("guid")
         if not guid and item.get("url"):
             guid = generate_tag_from_url(item["url"], "urn")
@@ -66,6 +68,8 @@ class FactSnackFeedParser(FeedParser):
             new_item["versioncreated"] = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S")
         else:
             new_item["versioncreated"] = datetime.datetime.now()
+
+        logger.debug('Parsed item looks like: ' + new_item)
         return new_item
 
 register_feed_parser(FactSnackFeedParser.NAME, FactSnackFeedParser())
