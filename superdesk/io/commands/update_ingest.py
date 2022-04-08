@@ -91,6 +91,7 @@ def is_not_expired(item, delta):
     if item.get("expiry") or item.get("versioncreated"):
         try:
             expiry = item.get("expiry", item["versioncreated"] + delta)
+            logger.info('Expiry is now {}' + format(expiry))
         except OverflowError:  # this will never expire
             return True
         if expiry.tzinfo:
@@ -98,7 +99,9 @@ def is_not_expired(item, delta):
         else:
             return expiry > datetime.now()
     if not item.get("versioncreated"):  # can't say really
+        logger.info('Could not get expiry or versioncreated for item {}.'.format(item))
         return True
+    logger.info('Item {} expired'.format(item))
     return False
 
 

@@ -67,10 +67,12 @@ class FactSnackFeedParser(FeedParser):
             "factsnack-source": item.get("url")
         }
 
-        if item.get("date"):
-            new_item["versioncreated"] = datetime.datetime.strptime(item.get("date"), "%Y-%m-%dT%H:%M")
+        date = item.get("date", "")
+        if date != "":
+            new_item["versioncreated"] = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M")
         else:
             new_item["versioncreated"] = datetime.datetime.now()
+        logger.info('Converted date {} to {}'.format(date, new_item["versioncreated"]))
 
         logger.debug('Parsed item looks like: {}'.format(new_item))
         return [new_item]
