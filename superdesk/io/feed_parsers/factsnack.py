@@ -36,7 +36,21 @@ class FactSnackFeedParser(FeedParser):
         "url"
     )
 
-    items = []
+    rating_map = {
+        'fehlender kontext': 'misleading',
+        'teilweise falsch': 'misleading',
+        'falsch': 'refuted', 
+        'größtenteils falsch': 'misleading', 
+        'frei erfunden': 'refuted', 
+        'unbelegt': 'refuted', 
+        'falsche überschrift': 'misleading', 
+        'manipuliert': 'misleading', 
+        'größtenteils richtig': 'misleading', 
+        'falscher kontext': 'misleading',
+        'belegt': 'verified',
+        'richtig': 'verified',
+        'wahr': 'verified'
+    }
 
     def __init__(self):
         super().__init__()
@@ -47,8 +61,16 @@ class FactSnackFeedParser(FeedParser):
         except AttributeError:
             return False
 
+    def _rating(self, s = None):
+        if s is not None:
+            try:
+                return(self.rating_map[s.lower()]) 
+            except KeyError:
+                logger.warning('Unknown rating: {}'.format(s))
+                return("")
+        return("")
+
     def parse(self, item, provider=None):
-        logger.debug('Parsing fact snack item: {}'.format(item))
 
         guid = item.get("guid")
         if not guid and item.get("url"):
@@ -58,8 +80,10 @@ class FactSnackFeedParser(FeedParser):
         new_item["slugline"] = item.get("slugline", "")
         new_item["language"] = item.get("language")
         new_item["headline"] = item.get("headline")
-        new_item["original_source"] = item.get("source", "")
-        new_item["priority"] = int(item.get("priority", "5"))
+        new_item["original_source"] = item.get("url")
+        new_item["priority"] = int(item.get("priority", "3"))
+
+        new_item["rating"] = self._rating(item.get("rating", None))
 
         new_item["extra"] = {
             "factsnack-claim": item.get("claim"),
@@ -72,9 +96,6 @@ class FactSnackFeedParser(FeedParser):
             new_item["versioncreated"] = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M")
         else:
             new_item["versioncreated"] = datetime.datetime.now()
-        logger.info('Converted date {} to {}'.format(date, new_item["versioncreated"]))
-
-        logger.debug('Parsed item looks like: {}'.format(new_item))
         return [new_item]
 
 register_feed_parser(FactSnackFeedParser.NAME, FactSnackFeedParser())
