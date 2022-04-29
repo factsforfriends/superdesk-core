@@ -266,7 +266,7 @@ class ArchiveVersionsResource(Resource):
 
 class ArchiveVersionsService(BaseService):
     def on_deleted(self, doc):
-        remove_media_files(doc)
+        remove_media_files(doc, published=False)
 
 
 class ArchiveResource(Resource):
@@ -342,7 +342,7 @@ class ArchiveService(BaseService):
             editor_utils.generate_fields(doc)
             self._test_readonly_stage(doc)
 
-            doc["version_creator"] = doc["original_creator"]
+            doc["version_creator"] = doc["original_creator"] or None  # avoid ""
             remove_unwanted(doc)
             update_word_count(doc)
             set_item_expiry({}, doc)
@@ -426,7 +426,7 @@ class ArchiveService(BaseService):
         """
         user = get_user()
 
-        editor_utils.generate_fields(updates)
+        editor_utils.generate_fields(updates, original=original)
         if ITEM_TYPE in updates:
             del updates[ITEM_TYPE]
 
@@ -575,7 +575,7 @@ class ArchiveService(BaseService):
         if doc[ITEM_TYPE] == CONTENT_TYPE.COMPOSITE:
             self.packageService.on_deleted(doc)
 
-        remove_media_files(doc)
+        remove_media_files(doc, published=False)
         self._remove_from_translations(doc)
 
         add_activity(
