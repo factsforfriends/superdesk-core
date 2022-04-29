@@ -88,7 +88,10 @@ class FactSnackFeedParser(FeedParser):
         new_item["extra"] = {
             "factsnack-claim": item.get("claim"),
             "factsnack-fact": item.get("fact"),
-            "factsnack-source": item.get("url")
+            "factsnack-source": {
+                'description': item.get("source", ""),
+                'url': item.get("url")
+            }
         }
 
         date = item.get("date", "")
